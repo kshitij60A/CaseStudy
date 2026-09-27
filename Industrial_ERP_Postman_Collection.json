@@ -1,0 +1,139 @@
+{
+  "info": {
+    "name": "Industrial ERP API",
+    "description": "API Collection for the Industrial ERP application.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@erp.com\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": { "raw": "http://localhost:5000/api/auth/login", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "auth", "login"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products & Inventory",
+      "item": [
+        {
+          "name": "List Products",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": { "raw": "http://localhost:5000/api/products", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "products"] }
+          }
+        },
+        {
+          "name": "Update Physical Inventory",
+          "request": {
+            "method": "PUT",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"physicalQuantity\": 150\n}" },
+            "url": { "raw": "http://localhost:5000/api/products/PRODUCT_ID_HERE/inventory", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "products", "PRODUCT_ID_HERE", "inventory"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Enquiries",
+      "item": [
+        {
+          "name": "List Enquiries",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": { "raw": "http://localhost:5000/api/enquiries", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "enquiries"] }
+          }
+        },
+        {
+          "name": "Create Enquiry",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"customerId\": \"CUSTOMER_ID_HERE\",\n  \"requiredDate\": \"2026-10-15T00:00:00.000Z\",\n  \"notes\": \"Urgent requirement\",\n  \"items\": [\n    {\n      \"productId\": \"PRODUCT_ID_HERE\",\n      \"quantity\": 10\n    }\n  ]\n}" },
+            "url": { "raw": "http://localhost:5000/api/enquiries", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "enquiries"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quotations",
+      "item": [
+        {
+          "name": "Create Quotation",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"enquiryId\": \"ENQUIRY_ID_HERE\",\n  \"validUntil\": \"2026-11-15T00:00:00.000Z\",\n  \"discountPercent\": 5,\n  \"gstPercent\": 18,\n  \"items\": [\n    {\n      \"productId\": \"PRODUCT_ID_HERE\",\n      \"quantity\": 10,\n      \"unitPrice\": 1000,\n      \"discountPercent\": 0,\n      \"gstPercent\": 18\n    }\n  ]\n}" },
+            "url": { "raw": "http://localhost:5000/api/quotations", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "quotations"] }
+          }
+        },
+        {
+          "name": "Update Quotation Status",
+          "request": {
+            "method": "PATCH",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"ACCEPTED\"\n}" },
+            "url": { "raw": "http://localhost:5000/api/quotations/QUOTATION_ID_HERE/status", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "quotations", "QUOTATION_ID_HERE", "status"] }
+          }
+        },
+        {
+          "name": "Convert to Sales Order",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": { "raw": "http://localhost:5000/api/quotations/QUOTATION_ID_HERE/convert", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "quotations", "QUOTATION_ID_HERE", "convert"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sales Orders",
+      "item": [
+        {
+          "name": "List Sales Orders",
+          "request": {
+            "method": "GET",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "url": { "raw": "http://localhost:5000/api/sales-orders", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "sales-orders"] }
+          }
+        },
+        {
+          "name": "Confirm Order (Reserves Stock)",
+          "request": {
+            "method": "PATCH",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"CONFIRMED\"\n}" },
+            "url": { "raw": "http://localhost:5000/api/sales-orders/SALES_ORDER_ID_HERE/status", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "sales-orders", "SALES_ORDER_ID_HERE", "status"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dispatches",
+      "item": [
+        {
+          "name": "Dispatch Order",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" } ],
+            "body": { "mode": "raw", "raw": "{\n  \"salesOrderId\": \"SALES_ORDER_ID_HERE\",\n  \"vehicleNumber\": \"MH-12-AB-1234\",\n  \"driverName\": \"Ramesh\"\n}" },
+            "url": { "raw": "http://localhost:5000/api/dispatches", "protocol": "http", "host": ["localhost"], "port": "5000", "path": ["api", "dispatches"] }
+          }
+        }
+      ]
+    }
+  ]
+}
