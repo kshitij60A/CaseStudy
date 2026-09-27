@@ -1,0 +1,178 @@
+// Prisma Schema for Industrial ERP
+// Database provider: sqlite (Default for zero-setup execution).
+// For PostgreSQL production setup, set provider = "postgresql" and update DATABASE_URL in .env.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   // "ADMIN" or "SALES_USER"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Customer {
+  id            String       @id @default(uuid())
+  companyName   String
+  contactPerson String
+  mobile        String
+  email         String
+  city          String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  enquiries   Enquiry[]
+  quotations  Quotation[]
+  salesOrders SalesOrder[]
+}
+
+model Product {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  name      String
+  category  String
+  unit      String
+  basePrice Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  inventory        Inventory?
+  enquiryItems     EnquiryItem[]
+  quotationItems   QuotationItem[]
+  salesOrderItems SalesOrderItem[]
+  dispatchItems    DispatchItem[]
+}
+
+model Inventory {
+  id               String   @id @default(uuid())
+  productId        String   @unique
+  physicalQuantity Int      @default(0)
+  reservedQuantity Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model Enquiry {
+  id            String   @id @default(uuid())
+  enquiryNumber String   @unique
+  customerId    String
+  enquiryDate   DateTime @default(now())
+  requiredDate  DateTime
+  notes         String?
+  status        String   @default("NEW") // "NEW", "QUOTED", "WON", "LOST"
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  customer Customer      @relation(fields: [customerId], references: [id])
+  items    EnquiryItem[]
+  quotations Quotation[]
+}
+
+model EnquiryItem {
+  id        String @id @default(uuid())
+  enquiryId String
+  productId String
+  quantity  Int
+
+  enquiry Enquiry @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Quotation {
+  id              String   @id @default(uuid())
+  quotationNumber String   @unique
+  enquiryId       String
+  customerId      String
+  validUntil      DateTime
+  discountPercent Float    @default(0)
+  gstPercent      Float    @default(18)
+  subtotal        Float    @default(0)
+  totalAmount     Float    @default(0)
+  status          String   @default("DRAFT") // "DRAFT", "SENT", "ACCEPTED", "REJECTED"
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  enquiry    Enquiry         @relation(fields: [enquiryId], references: [id])
+  customer   Customer        @relation(fields: [customerId], references: [id])
+  items      QuotationItem[]
+  salesOrder SalesOrder?
+}
+
+model QuotationItem {
+  id              String @id @default(uuid())
+  quotationId     String
+  productId       String
+  quantity        Int
+  unitPrice       Float
+  discountPercent Float  @default(0)
+  gstPercent      Float  @default(18)
+  lineAmount      Float
+
+  quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  product   Product   @relation(fields: [productId], references: [id])
+}
+
+model SalesOrder {
+  id          String   @id @default(uuid())
+  orderNumber String   @unique
+  quotationId String   @unique // Enforces 1-to-1 conversion (prevents duplicate orders per quotation)
+  customerId  String
+  orderDate   DateTime @default(now())
+  totalAmount Float
+  status      String   @default("PENDING") // "PENDING", "CONFIRMED", "DISPATCHED", "CANCELLED"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  quotation Quotation        @relation(fields: [quotationId], references: [id])
+  customer  Customer         @relation(fields: [customerId], references: [id])
+  items     SalesOrderItem[]
+  dispatch  Dispatch?
+}
+
+model SalesOrderItem {
+  id           String @id @default(uuid())
+  salesOrderId String
+  productId    String
+  quantity     Int
+  unitPrice    Float
+  lineAmount   Float
+
+  salesOrder SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  product    Product    @relation(fields: [productId], references: [id])
+}
+
+model Dispatch {
+  id             String   @id @default(uuid())
+  dispatchNumber String   @unique
+  salesOrderId   String   @unique
+  dispatchDate   DateTime @default(now())
+  vehicleNumber  String
+  driverName     String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  salesOrder SalesOrder     @relation(fields: [salesOrderId], references: [id])
+  items      DispatchItem[]
+}
+
+model DispatchItem {
+  id         String @id @default(uuid())
+  dispatchId String
+  productId  String
+  quantity   Int
+
+  dispatch Dispatch @relation(fields: [dispatchId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id])
+}
